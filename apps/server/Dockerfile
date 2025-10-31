@@ -38,7 +38,7 @@ RUN pnpm run build --filter="server"
 FROM oven/bun:1.3-alpine AS production
 
 RUN apk update && \
-    apk add --no-cache nodejs-current npm && \
+    apk add --no-cache nodejs-lts && \
     rm -rf /var/cache/apk/*
 
 # 2. Use npm itself to upgrade to the absolute latest version
