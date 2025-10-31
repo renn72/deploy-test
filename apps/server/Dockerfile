@@ -39,17 +39,7 @@ FROM oven/bun:1.3-alpine AS production
 
 ENV NODE_ENV=production
 
-ENV NODE_PACKAGE_URL https://nodejs.org/dist/v24.11.0/node-v24.11.0-linux-x64.tar.xz
-RUN apk add libstdc++
-WORKDIR /opt
-RUN wget $NODE_PACKAGE_URL
-RUN mkdir -p /opt/nodejs
-RUN tar -Jxvf *.tar.xz --directory /opt/nodejs --strip-components=1
-RUN rm *.tar.xz
-RUN ln -s /opt/nodejs/bin/node /usr/local/bin/node
-RUN ln -s /opt/nodejs/bin/npm /usr/local/bin/npm
-
-RUN npm install -g npm@24.11.0
+RUN apk add nodejs npm
 
 WORKDIR /app
 
