@@ -37,15 +37,28 @@ FROM oven/bun:1.3-debian AS production
 
 ENV NODE_ENV=production
 
-# RUN apk add nodejs npm
-RUN apt-get update && apt-get install -y ca-certificates curl gnupg \
-    && mkdir -p /etc/apt/keyrings \
-    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_lts.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
-    && apt-get update \
-    && apt-get install nodejs -y \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Install dependencies, download key, add repo, install Node.js, and clean up
+RUN set -ex; \
+    # 1. Update and install core utilities
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        gnupg \
+        dirmngr; \
+    \
+    # 2. Set up the NodeSource repository
+    mkdir -p /etc/apt/keyrings; \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg; \
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_lts.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list; \
+    \
+    # 3. Install Node.js LTS
+    apt-get update; \
+    apt-get install -y nodejs; \
+    \
+    # 4. Clean up to minimize image size
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
