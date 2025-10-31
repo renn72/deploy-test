@@ -33,11 +33,11 @@ RUN pnpm run build --filter=server
 # Stage 2: PRODUCTION
 # This stage uses a minimal Bun image for the final runtime environment.
 #---------------------------------------------------------------------
-FROM oven/bun:1.3-debian AS production
+FROM oven/bun:1.3-alpine AS production
 
 ENV NODE_ENV=production
 
-# RUN apk add nodejs npm
+RUN apk add nodejs npm
 
 WORKDIR /app
 
