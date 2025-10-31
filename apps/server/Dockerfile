@@ -27,8 +27,8 @@ COPY . .
 
 # 4. Build all workspace dependencies AND the server using PNPM and Turbo
 # This uses your existing Turbo config's 'build' command with filters
-RUN pnpm exec turbo build --filter="@deploy-test/api..."
-RUN pnpm exec turbo --filter="server"
+RUN pnpm run build --filter="@deploy-test/api..."
+RUN pnpm run build --filter="server"
 
 #---------------------------------------------------------------------
 # Stage 2: PRODUCTION
