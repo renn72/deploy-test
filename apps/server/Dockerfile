@@ -59,44 +59,42 @@ RUN set -ex; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
-
-# Copy root files needed for pnpm to resolve dependencies
-COPY --from=builder /app/package.json .
-COPY --from=builder /app/pnpm-lock.yaml .
-COPY --from=builder /app/pnpm-workspace.yaml .
-
-# Copy only the package.json files necessary for the production install filter
-COPY --from=builder /app/apps/server/package.json ./apps/server/
-COPY --from=builder /app/packages/api/package.json ./packages/api/
-COPY --from=builder /app/packages/auth/package.json ./packages/auth/
-COPY --from=builder /app/packages/db/package.json ./packages/db/
-
-# 2. Install PNPM globally in this stage
 RUN npm install -g pnpm
 
-# 3. Install *only* production dependencies for the server package,
-# running from the root where the lockfile is. This will create the necessary
-# node_modules structure for the server app to run.
+# Create the application's home and give ownership to the non-root user
+# We create a home directory for the user to store global configs/caches
+RUN mkdir -p /home/appuser && \
+    chown -R appuser:appuser /app /home/appuser
+
+# Copy root files needed for pnpm to resolve dependencies
+# Set ownership explicitly when copying
+COPY --chown=appuser:appuser --from=builder /app/package.json .
+COPY --chown=appuser:appuser --from=builder /app/pnpm-lock.yaml .
+COPY --chown=appuser:appuser --from=builder /app/pnpm-workspace.yaml .
+
+# Copy only the package.json files necessary for the production install filter
+COPY --chown=appuser:appuser --from=builder /app/apps/server/package.json ./apps/server/
+COPY --chown=appuser:appuser --from=builder /app/packages/api/package.json ./packages/api/
+COPY --chown=appuser:appuser --from=builder /app/packages/auth/package.json ./packages/auth/
+COPY --chown=appuser:appuser --from=builder /app/packages/db/package.json ./packages/db/
+
+# 2. Install *only* production dependencies for the server package
+# This runs as root, creating the node_modules.
+# Note: The pnpm cache will be created in /root, which is fine for a temporary build step.
 RUN pnpm install --production --frozen-lockfile
 
-# 4. Copy the built code and run artifacts
-# The server's built code
-COPY --from=builder /app/apps/server/dist ./apps/server/dist
-# The entire built packages tree (required for workspace imports)
-COPY --from=builder /app/packages ./packages
+# 3. Copy the built code and run artifacts
+COPY --chown=appuser:appuser --from=builder /app/apps/server/dist ./apps/server/dist
+COPY --chown=appuser:appuser --from=builder /app/packages ./packages
+
+# 4. Switch to the non-root user (AFTER all installation and file ownership is set)
+USER appuser
 
 # 5. Set the final working directory to the server app itself
 WORKDIR /app/apps/server
 
-# 6. Create a non-root user and set permissions (best practice)
-# RUN addgroup -S appuser && adduser -S appuser -G appuser
-RUN addgroup --system appuser && adduser --system --no-create-home --ingroup appuser appuser
-USER appuser
-
-# 7. Expose the default Hono port
+# 6. Expose the default Hono port
 EXPOSE 3000
 
-# 8. Define the command to run your server
-# This relies on the dependency structure established in step 3.
+# 7. Define the command to run your server
 CMD ["pnpm", "start"]
-
