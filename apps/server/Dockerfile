@@ -37,6 +37,8 @@ FROM oven/bun:1.3-debian AS production
 
 ENV NODE_ENV=production
 
+WORKDIR /app
+
 # Install dependencies, download key, add repo, install Node.js, and clean up
 RUN set -ex; \
     # 1. Update and install core utilities
@@ -57,7 +59,6 @@ RUN set -ex; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
 
 # Copy root files needed for pnpm to resolve dependencies
 COPY --from=builder /app/package.json .
