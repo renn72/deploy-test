@@ -41,7 +41,7 @@ ENV NODE_ENV=production
 
 RUN apk add nodejs npm
 
-WORKDIR /app
+WORKDIR /app/apps/server
 
 # Create a non-root user for better security
 RUN addgroup -S appuser && adduser -S appuser -G appuser
@@ -65,6 +65,7 @@ COPY --from=builder /app/packages/auth/dist ./packages/auth/dist
 COPY --from=builder /app/packages/db/dist ./packages/db/dist
 
 # 4. Set the non-root user
+RUN addgroup -S appuser && adduser -S appuser -G appuser
 USER appuser
 
 # 5. Set the working directory to the server package
