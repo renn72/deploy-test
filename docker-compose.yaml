@@ -26,8 +26,6 @@ services:
       - app_network
     restart: always
     # Domain reference for easier reverse proxy setup
-    labels:
-      - "traefik.http.routers.web.rule=Host(`fit.wsys.au`)"
 
 
   # --------------------------------------------------------
@@ -49,5 +47,3 @@ services:
       - app_network
     restart: always
     # Domain reference for easier reverse proxy setup
-    labels:
-      - "traefik.http.routers.server.rule=Host(`fit.api.wsys.au`)"
