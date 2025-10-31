@@ -42,7 +42,7 @@ WORKDIR /app/apps/server
 
 # 1. Copy the necessary package files and built code
 # Copying only the required files to the final working directory
-# COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/apps/server/package.json ./
 COPY --from=builder /app/apps/server/dist ./dist
 
