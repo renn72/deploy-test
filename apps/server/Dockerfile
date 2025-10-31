@@ -37,6 +37,8 @@ ENV NODE_ENV=production
 
 RUN apk add nodejs npm
 
+WORKDIR /app
+
 # Copy root files needed for pnpm to resolve dependencies
 COPY --from=builder /app/package.json .
 COPY --from=builder /app/pnpm-lock.yaml .
