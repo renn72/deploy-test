@@ -11,15 +11,12 @@ RUN npm install -g pnpm
 
 # 1. Copy all package.json files and the PNPM lockfile
 # All paths are relative to the build context (monorepo root).
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/server/package.json ./apps/server/
 COPY apps/web/package.json ./apps/web/
 COPY packages/api/package.json ./packages/api/
 COPY packages/auth/package.json ./packages/auth/
 COPY packages/db/package.json ./packages/db/
-
-ARG VITE_SERVER_URL
-ENV VITE_SERVER_URL=${VITE_SERVER_URL}
 
 # 2. Install all dependencies using PNPM
 RUN pnpm install --frozen-lockfile --production=false
