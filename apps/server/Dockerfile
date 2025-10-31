@@ -36,6 +36,7 @@ RUN pnpm run build --filter=server
 FROM oven/bun:1.3-debian AS production
 
 ENV NODE_ENV=production
+ENV HOME=/home/appuser
 
 WORKDIR /app
 
@@ -63,7 +64,13 @@ RUN npm install -g pnpm
 
 # Create the application's home and give ownership to the non-root user
 # We create a home directory for the user to store global configs/caches
-RUN mkdir -p /home/appuser && \
+RUN set -ex; \
+    # 1. Create the user and group
+    addgroup --system appuser; \
+    adduser --system --no-create-home --ingroup appuser appuser; \
+    \
+    # 2. Create the home directory and ensure ownership of /app and /home/appuser
+    mkdir -p /home/appuser; \
     chown -R appuser:appuser /app /home/appuser
 
 # Copy root files needed for pnpm to resolve dependencies
