@@ -37,18 +37,19 @@ RUN pnpm run build --filter="server"
 #---------------------------------------------------------------------
 FROM oven/bun:1.3-alpine AS production
 
-RUN apk update && \
-    apk add --no-cache nodejs-lts && \
-    rm -rf /var/cache/apk/*
-
-# 2. Use npm itself to upgrade to the absolute latest version
-# This step ensures you get the most current release directly from the npm registry.
-RUN npm install -g npm@latest
-
-# Verify the versions (Optional, but recommended for debugging)
-RUN node -v && npm -v
-
 ENV NODE_ENV=production
+
+ENV NODE_PACKAGE_URL https://nodejs.org/dist/v24.11.0/node-v24.11.0-linux-x64.tar.xz
+RUN apk add libstdc++
+WORKDIR /opt
+RUN wget $NODE_PACKAGE_URL
+RUN mkdir -p /opt/nodejs
+RUN tar -zxvf *.tar.gz --directory /opt/nodejs --strip-components=1
+RUN rm *.tar.gz
+RUN ln -s /opt/nodejs/bin/node /usr/local/bin/node
+RUN ln -s /opt/nodejs/bin/npm /usr/local/bin/npm
+
+RUN npm install -g npm@latest
 
 WORKDIR /app
 
