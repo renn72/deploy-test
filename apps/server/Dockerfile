@@ -49,7 +49,7 @@ RUN rm *.tar.xz
 RUN ln -s /opt/nodejs/bin/node /usr/local/bin/node
 RUN ln -s /opt/nodejs/bin/npm /usr/local/bin/npm
 
-RUN npm install -g npm@latest
+RUN npm install -g npm@24.11.0
 
 WORKDIR /app
 
