@@ -14,7 +14,7 @@ services:
     container_name: web
     build:
       context: .
-      dockerfile: apps/web/Dockerfile.web
+      dockerfile: apps/web/Dockerfile
       target: production
     env_file:
       - .env
