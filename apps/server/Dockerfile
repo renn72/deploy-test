@@ -89,7 +89,8 @@ COPY --from=builder /app/packages ./packages
 WORKDIR /app/apps/server
 
 # 6. Create a non-root user and set permissions (best practice)
-RUN addgroup -S appuser && adduser -S appuser -G appuser
+# RUN addgroup -S appuser && adduser -S appuser -G appuser
+RUN addgroup --system appuser && adduser --system --no-create-home --ingroup appuser appuser
 USER appuser
 
 # 7. Expose the default Hono port
