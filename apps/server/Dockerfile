@@ -35,7 +35,18 @@ RUN pnpm run build --filter="server"
 # This stage builds the final, lean production image. Since the original
 # 'start' script uses 'bun', we return to a bun-based image for the runtime.
 #---------------------------------------------------------------------
-FROM oven/bun:1.0-alpine AS production
+FROM oven/bun:1.3-alpine AS production
+
+RUN apk update && \
+    apk add --no-cache nodejs-current npm && \
+    rm -rf /var/cache/apk/*
+
+# 2. Use npm itself to upgrade to the absolute latest version
+# This step ensures you get the most current release directly from the npm registry.
+RUN npm install -g npm@latest
+
+# Verify the versions (Optional, but recommended for debugging)
+RUN node -v && npm -v
 
 ENV NODE_ENV=production
 
