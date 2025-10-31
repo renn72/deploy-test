@@ -18,8 +18,12 @@ COPY packages/api/package.json ./packages/api/
 COPY packages/auth/package.json ./packages/auth/
 COPY packages/db/package.json ./packages/db/
 
+ARG VITE_SERVER_URL
+ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+
 # 2. Install all dependencies using PNPM
 RUN pnpm install --frozen-lockfile --production=false
+RUN pnpm install --frozen-lockfile --dev
 
 # 3. Copy all source code
 COPY . .
