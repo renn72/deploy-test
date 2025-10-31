@@ -58,7 +58,7 @@ RUN npm install -g pnpm
 # 3. Install *only* production dependencies for the server package,
 # running from the root where the lockfile is. This will create the necessary
 # node_modules structure for the server app to run.
-RUN pnpm install --production --frozen-lockfile --filter=server
+RUN pnpm install --production --frozen-lockfile
 
 # 4. Copy the built code and run artifacts
 # The server's built code
