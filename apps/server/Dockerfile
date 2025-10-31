@@ -44,8 +44,8 @@ RUN apk add libstdc++
 WORKDIR /opt
 RUN wget $NODE_PACKAGE_URL
 RUN mkdir -p /opt/nodejs
-RUN tar -zxvf *.tar.xz --directory /opt/nodejs --strip-components=1
-RUN rm *.tar.gz
+RUN tar -Jxvf *.tar.xz --directory /opt/nodejs --strip-components=1
+RUN rm *.tar.xz
 RUN ln -s /opt/nodejs/bin/node /usr/local/bin/node
 RUN ln -s /opt/nodejs/bin/npm /usr/local/bin/npm
 
