@@ -37,31 +37,42 @@ ENV NODE_ENV=production
 
 RUN apk add nodejs npm
 
-# Set the final working directory to the server app itself
-WORKDIR /app/apps/server
+# Copy root files needed for pnpm to resolve dependencies
+COPY --from=builder /app/package.json .
+COPY --from=builder /app/pnpm-lock.yaml .
+COPY --from=builder /app/pnpm-workspace.yaml .
 
-# 1. Copy the necessary package files and built code
-# Copying only the required files to the final working directory
-# COPY --from=builder /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
-COPY --from=builder /app/apps/server/package.json ./
-COPY --from=builder /app/apps/server/dist ./dist
+# Copy only the package.json files necessary for the production install filter
+COPY --from=builder /app/apps/server/package.json ./apps/server/
+COPY --from=builder /app/packages/api/package.json ./packages/api/
+COPY --from=builder /app/packages/auth/package.json ./packages/auth/
+COPY --from=builder /app/packages/db/package.json ./packages/db/
 
-# 2. Copy the entire *built* packages tree from the monorepo root
-# This includes the built `dist` folders of shared packages required by the server.
+# 2. Install PNPM globally in this stage
+RUN npm install -g pnpm
+
+# 3. Install *only* production dependencies for the server package,
+# running from the root where the lockfile is. This will create the necessary
+# node_modules structure for the server app to run.
+RUN pnpm install --production --frozen-lockfile --filter=server
+
+# 4. Copy the built code and run artifacts
+# The server's built code
+COPY --from=builder /app/apps/server/dist ./apps/server/dist
+# The entire built packages tree (required for workspace imports)
 COPY --from=builder /app/packages ./packages
 
-# 3. Install *only* production dependencies for the server package.
-# This ensures a local node_modules is created for the server's runtime.
-RUN npm install -g pnpm
-RUN pnpm install --production --frozen-lockfile
+# 5. Set the final working directory to the server app itself
+WORKDIR /app/apps/server
 
-# 4. Create a non-root user and set permissions (best practice)
+# 6. Create a non-root user and set permissions (best practice)
 RUN addgroup -S appuser && adduser -S appuser -G appuser
 USER appuser
 
-# 5. Expose the default Hono port
+# 7. Expose the default Hono port
 EXPOSE 3000
 
-# 6. Define the command to run your server
-# This relies on the local node_modules created by the production install step above.
+# 8. Define the command to run your server
+# This relies on the dependency structure established in step 3.
 CMD ["pnpm", "start"]
+
