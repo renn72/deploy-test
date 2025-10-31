@@ -42,18 +42,15 @@ RUN set -ex; \
     # 1. Update and install core utilities
     apt-get update; \
     apt-get install -y --no-install-recommends \
-        ca-certificates \
         curl \
         gnupg \
         dirmngr; \
     \
-    # 2. Set up the NodeSource repository
-    mkdir -p /etc/apt/keyrings; \
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg; \
-    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_lts.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list; \
+    # 2. Use the official NodeSource script to add the LTS repository
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - ; \
     \
-    # 3. Install Node.js LTS
-    apt-get update; \
+    # 3. Install Node.js (this step already ran inside the 'bash -' script,
+    # but we run it again in case it was skipped or the source lists weren't re-updated)
     apt-get install -y nodejs; \
     \
     # 4. Clean up to minimize image size
