@@ -27,7 +27,7 @@ COPY . .
 # 4. Build the 'web' package using PNPM
 # This runs the "build": "vite build" script from `apps/web/package.json`
 # The output will be in `apps/web/dist`
-RUN pnpm run build --filter="web"
+RUN pnpm exec turbo build --filter="web"
 
 #---------------------------------------------------------------------
 # Stage 2: PRODUCTION
