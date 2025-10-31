@@ -1,3 +1,9 @@
+#---------------------------------------------------------------------
+# Stage 1: BUILDER
+# Using a Node image for easy installation of PNPM
+#---------------------------------------------------------------------
+FROM node:20-alpine AS builder
+
 WORKDIR /app
 
 # Install PNPM globally
@@ -37,7 +43,7 @@ WORKDIR /app/apps/server
 # 1. Copy the necessary package files and built code
 # Copying only the required files to the final working directory
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
-COPY --from=builder /app/apps/server/package.json .
+COPY --from=builder /app/apps/server/package.json ./
 COPY --from=builder /app/apps/server/dist ./dist
 
 # 2. Copy the entire *built* packages tree from the monorepo root
