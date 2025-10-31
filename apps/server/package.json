@@ -17,6 +17,7 @@
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "zod": "catalog:",
+    "@libsql/linux-x64-gnu": "^0.5.22",
     "@deploy-test/api": "workspace:*",
     "@deploy-test/auth": "workspace:*",
     "@deploy-test/db": "workspace:*"
