@@ -1,0 +1,51 @@
+version: '3.8'
+
+# This file should be placed in the monorepo root (my-app/)
+
+services:
+
+  # --- SERVER SERVICE (Hono Backend) ---
+  server:
+    # Use the root of the monorepo as the context to access packages/ and root package.json
+    build:
+      context: .
+      # Reference the Dockerfile within the apps/server directory
+      dockerfile: ./apps/server/Dockerfile
+    container_name: deploy-test-server
+    # Load environment variables from the .env file at the root
+    env_file:
+      - .env
+    # Map the internal port 3000 to the host port 3000
+    # NOTE: You will need a reverse proxy (like Nginx/Traefik) running externally
+    # to handle the fit.api.wsys.au domain and route traffic to this port.
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+
+  # --- WEB SERVICE (Vite Frontend) ---
+  web:
+    # Use the root of the monorepo as the context
+    build:
+      context: .
+      # Reference the Dockerfile within the apps/web directory
+      dockerfile: ./apps/web/Dockerfile
+    container_name: deploy-test-web
+    # Load environment variables from the .env file at the root
+    env_file:
+      - .env
+    # Nginx runs on port 80 internally. Map it to 80 on the host.
+    # NOTE: A reverse proxy will handle the fit.wsys.au domain and route traffic to this port.
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+    # Ensures the frontend is built only after the backend build is complete (optional but helpful)
+    depends_on:
+      - server
+
+# --- NETWORKS ---
+# This defines a bridge network for internal communication between services
+networks:
+  app-network:
+    driver: bridge
