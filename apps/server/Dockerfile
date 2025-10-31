@@ -47,7 +47,7 @@ WORKDIR /app/apps/server
 RUN addgroup -S appuser && adduser -S appuser -G appuser
 
 # 1. Copy only the package.json files and lockfile again
-COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/apps/server/package.json ./apps/server/
 COPY --from=builder /app/apps/web/package.json ./apps/web/
 COPY --from=builder /app/packages/api/package.json ./packages/api/
