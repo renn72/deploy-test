@@ -51,7 +51,7 @@ RUN set -ex; \
     \
     # 3. Install Node.js (this step already ran inside the 'bash -' script,
     # but we run it again in case it was skipped or the source lists weren't re-updated)
-    apt-get install -y nodejs; \
+    apt-get install -y nodejs npm; \
     \
     # 4. Clean up to minimize image size
     apt-get clean; \
