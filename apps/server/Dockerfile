@@ -1,16 +1,9 @@
-#---------------------------------------------------------------------
-# Stage 1: BUILDER
-# Using a Node image for easy installation of PNPM
-#---------------------------------------------------------------------
-FROM node:20-alpine AS builder
-
 WORKDIR /app
 
 # Install PNPM globally
 RUN npm install -g pnpm
 
-# 1. Copy all package.json files and the PNPM lockfile
-# All paths are relative to the build context (monorepo root).
+# 1. Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/server/package.json ./apps/server/
 COPY apps/web/package.json ./apps/web/
@@ -18,22 +11,19 @@ COPY packages/api/package.json ./packages/api/
 COPY packages/auth/package.json ./packages/auth/
 COPY packages/db/package.json ./packages/db/
 
-# 2. Install all dependencies using PNPM
-# --frozen-lockfile ensures deterministic builds
+# 2. Install all dependencies
 RUN pnpm install --frozen-lockfile --production=false
 
-# 3. Copy all source code
+# 3. Copy source code
 COPY . .
 
-# 4. Build all workspace dependencies AND the server using PNPM and Turbo
-# This uses your existing Turbo config's 'build' command with filters
-RUN pnpm run build --filter="@deploy-test/api..."
-RUN pnpm run build --filter="server"
+# 4. Build all necessary packages
+RUN pnpm run build --filter=@deploy-test/api...
+RUN pnpm run build --filter=server
 
 #---------------------------------------------------------------------
 # Stage 2: PRODUCTION
-# This stage builds the final, lean production image. Since the original
-# 'start' script uses 'bun', we return to a bun-based image for the runtime.
+# This stage uses a minimal Bun image for the final runtime environment.
 #---------------------------------------------------------------------
 FROM oven/bun:1.3-alpine AS production
 
@@ -41,39 +31,30 @@ ENV NODE_ENV=production
 
 RUN apk add nodejs npm
 
+# Set the final working directory to the server app itself
 WORKDIR /app/apps/server
 
-# Create a non-root user for better security
-RUN addgroup -S appuser && adduser -S appuser -G appuser
+# 1. Copy the necessary package files and built code
+# Copying only the required files to the final working directory
+COPY --from=builder /app/apps/server/package.json .
+COPY --from=builder /app/apps/server/dist ./dist
 
-# 1. Copy only the package.json files and lockfile again
-COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
-COPY --from=builder /app/apps/server/package.json ./apps/server/
-COPY --from=builder /app/apps/web/package.json ./apps/web/
-COPY --from=builder /app/packages/api/package.json ./packages/api/
-COPY --from=builder /app/packages/auth/package.json ./packages/auth/
-COPY --from=builder /app/packages/db/package.json ./packages/db/
+# 2. Copy the entire *built* packages tree from the monorepo root
+# This includes the built `dist` folders of shared packages required by the server.
+COPY --from=builder /app/packages ./packages
 
-# 2. Install PNPM again in this stage and run production install
+# 3. Install *only* production dependencies for the server package.
+# This ensures a local node_modules is created for the server's runtime.
 RUN npm install -g pnpm
-RUN pnpm install --frozen-lockfile --production
+RUN pnpm install --production --frozen-lockfile
 
-# 3. Copy the built code (the `dist` folders) from the builder stage
-COPY --from=builder /app/apps/server/dist ./apps/server/dist
-COPY --from=builder /app/packages/api/dist ./packages/api/dist
-COPY --from=builder /app/packages/auth/dist ./packages/auth/dist
-COPY --from=builder /app/packages/db/dist ./packages/db/dist
-
-# 4. Set the non-root user
-# RUN addgroup -S appuser && adduser -S appuser -G appuser
+# 4. Create a non-root user and set permissions (best practice)
+RUN addgroup -S appuser && adduser -S appuser -G appuser
 USER appuser
 
-# 5. Set the working directory to the server package
-WORKDIR /app/apps/server
-
-# 6. Expose the default Hono port
+# 5. Expose the default Hono port
 EXPOSE 3000
 
-# 7. Define the command to run your server via pnpm
+# 6. Define the command to run your server
+# This relies on the local node_modules created by the production install step above.
 CMD ["pnpm", "start"]
-
