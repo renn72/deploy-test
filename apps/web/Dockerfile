@@ -23,7 +23,6 @@ ENV VITE_SERVER_URL=${VITE_SERVER_URL}
 
 # 2. Install all dependencies using PNPM
 RUN pnpm install --frozen-lockfile --production=false
-RUN pnpm install --frozen-lockfile --dev
 
 # 3. Copy all source code
 COPY . .

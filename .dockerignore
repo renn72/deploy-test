@@ -1,0 +1,28 @@
+#Node/Bun dependencies
+
+#node_modules
+**/node_modules
+
+#Build artifacts
+
+#dist
+**/dist
+
+#Environment files
+
+.env
+.env.*
+!.env.example
+
+#Git and OS files
+
+.git
+.gitignore
+.DS_Store
+*.md
+
+#Docker files
+
+Dockerfile
+Dockerfile.web
+docker-compose.yml
