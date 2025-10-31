@@ -1,17 +1,20 @@
 import "dotenv/config";
-import { OpenAPIHandler } from "@orpc/openapi/fetch";
-import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
-import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
-import { RPCHandler } from "@orpc/server/fetch";
-import { onError } from "@orpc/server";
 import { createContext } from "@deploy-test/api/context";
 import { appRouter } from "@deploy-test/api/routers/index";
 import { auth } from "@deploy-test/auth";
+import { OpenAPIHandler } from "@orpc/openapi/fetch";
+import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
+import { onError } from "@orpc/server";
+import { RPCHandler } from "@orpc/server/fetch";
+import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
 const app = new Hono();
+
+console.log("Starting server...");
+console.log(`corsOrigin: ${process.env.CORS_ORIGIN}`);
 
 app.use(logger());
 app.use(
